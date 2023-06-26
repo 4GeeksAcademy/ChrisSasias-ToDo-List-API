@@ -1,26 +1,80 @@
-import React from "react";
+import React, { useState, useEffect } from "react";
 
-//include images into your bundle
-import rigoImage from "../../img/rigo-baby.jpg";
-
-//create your first component
 const Home = () => {
-	return (
-		<div className="text-center">
-			<h1 className="text-center mt-5">Hello Rigo!</h1>
-			<p>
-				<img src={rigoImage} />
-			</p>
-			<a href="#" className="btn btn-success">
-				If you see this green button... bootstrap is working...
-			</a>
-			<p>
-				Made by{" "}
-				<a href="http://www.4geeksacademy.com">4Geeks Academy</a>, with
-				love!
-			</p>
-		</div>
-	);
+  const [tareas, setTareas] = useState([]);
+  const [ingreso, setIngreso] = useState("");
+
+  useEffect(() => {
+    fetch("https://assets.breatheco.de/apis/fake/todos/user/user1")
+      .then((res) => res.json())
+      .then((resAsJson) => {
+        console.log(resAsJson);
+        setTareas(resAsJson);
+      })
+      .catch((error) => {
+        console.log(error);
+      });
+  }, []);
+
+  const handleSubmit = (event) => {
+    if (event.key === "Enter") {
+      const newTask = { label: ingreso, done: false };
+      const newTasks = [...tareas, newTask];
+      setTareas(newTasks);
+      setIngreso("");
+      updateTasks(newTasks);
+    }
+  };
+
+  const handleDelete = (index) => {
+    const updatedTasks = tareas.filter((_, i) => i !== index);
+    setTareas(updatedTasks);
+    updateTasks(updatedTasks);
+  };
+
+  const updateTasks = (updatedTasks) => {
+    fetch("https://assets.breatheco.de/apis/fake/todos/user/user1", {
+      method: "put",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify(updatedTasks),
+    })
+      .then((res) => res.json())
+      .then((resAsJson) => {
+        console.log(resAsJson);
+      })
+      .catch((error) => {
+        console.log(error);
+      });
+  };
+
+  return (
+    <div className="text-center">
+      <div className="container-list">
+        <input
+          type="text"
+          value={ingreso}
+          maxLength="32"
+          onChange={(event) => setIngreso(event.target.value)}
+          onKeyDown={handleSubmit}
+        />
+        <ul className="cont-button">
+          {tareas.map((task, index) => (
+            <li key={index}>
+              {task.label}{" "}
+              <button
+                className="clear"
+                onClick={() => handleDelete(index)}
+              >
+                x
+              </button>
+            </li>
+          ))}
+        </ul>
+      </div>
+    </div>
+  );
 };
 
 export default Home;
